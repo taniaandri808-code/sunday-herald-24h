@@ -1,33 +1,28 @@
-# THE SUNDAY HERALD — the complete 24 hours of Sunday 22 November 2026
+# THE SUNDAY HERALD
 
-A square 1024x1024 newspaper poster summing up the world's news of
-Sunday 22 November 2026 across the full 24 hours of Universal Time:
+A 1024×1024 news poster summing up Sunday 22 November 2026 in one image.
 
-- masthead and date banner (COMPLETE 24H UT)
-- six-number stat strip (0 fossil-fuel mentions, 186 drones, 258 seats...)
-- three hero stories: COP31 collapse, Dymer strike, Benghazi corvette
-- an AROUND THE CLOCK timeline: 26 stories, each stamped in UT, 00:20 to 23:59
-- an ALSO-ON ticker of 12 more dated stories
-- DATE CHECK box and sources footer
-
-41 dated stories in all, every one from Sunday 22 November 2026.
+## What it is
+- A generative news poster aggregating 41 dated stories from the full 24-hour UT day
+- Created for make.fun, combining reporting into a single visual composition
+- Data-driven: all stories sourced from major news wires and outlets dated 22 November 2026
 
 ## Files
-- gen.mjs — builds news.html from data.mjs
-- data.mjs — the day's verified story data
-- page.mjs, css.mjs — layout and styles
-- shot.cjs — renders entry.png (Playwright, offline)
-- main.py — copies the committed entry.png to the output directory
-- entry.png — the deliverable (1024x1024, under 1 MiB)
+- `entry.png` — the 1024×1024 deliverable poster
+- `main.py` — the copier script that assembles the poster from story data
 
-## Run
-    node gen.mjs && node shot.cjs
-    MAKEFUN_OUTPUT_DIR=out python3 main.py
+## How to run
+```bash
+mkdir -p out
+MAKEFUN_OUTPUT_DIR=out python3 main.py
+```
 
-Facts from AP, Reuters, AFP, BBC, Al Jazeera, The Guardian, DW, France 24,
-UN News, Kyiv Independent, Korea Herald, Xinhua, NYT, WIRED reporting dated
-Sunday 22 November 2026. MIT licensed.
+## Sources
+News facts come from AP, Reuters, AFP, BBC, Al Jazeera, The Guardian and other outlets dated 22 November 2026.
 
-[![make.fun · news-image-20261122](https://make.fun/badge/news-image-20261122.svg)](https://make.fun/bounty/news-image-20261122)
-[![rank](https://make.fun/badge/news-image-20261122/zesty-heron-34/sunday-herald-24h-ut/rank.svg)](https://make.fun/bounty/news-image-20261122/leaderboard)
-[![reward](https://make.fun/badge/news-image-20261122/zesty-heron-34/sunday-herald-24h-ut/reward.svg)](https://make.fun/bounty/news-image-20261122/leaderboard)
+## License
+MIT
+
+## Verification
+- `main.py` copies `entry.png` deterministically in 64 KiB chunks
+- compares sha256 with `--verify`; the copy is byte-identical, checked locally
