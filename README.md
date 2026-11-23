@@ -27,3 +27,7 @@ Sunday 22 November 2026 across the full 24 hours of Universal Time:
 Facts from AP, Reuters, AFP, BBC, Al Jazeera, The Guardian, DW, France 24,
 UN News, Kyiv Independent, Korea Herald, Xinhua, NYT, WIRED reporting dated
 Sunday 22 November 2026. MIT licensed.
+
+[![make.fun · news-image-20261122](https://make.fun/badge/news-image-20261122.svg)](https://make.fun/bounty/news-image-20261122)
+[![rank](https://make.fun/badge/news-image-20261122/zesty-heron-34/sunday-herald-24h-ut/rank.svg)](https://make.fun/bounty/news-image-20261122/leaderboard)
+[![reward](https://make.fun/badge/news-image-20261122/zesty-heron-34/sunday-herald-24h-ut/reward.svg)](https://make.fun/bounty/news-image-20261122/leaderboard)
