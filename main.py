@@ -1,60 +1,74 @@
-"""Copy entry.png to the MAKEFUN_OUTPUT_DIR, verifying integrity."""
+"""
+Copy entry.png to MAKEFUN_OUTPUT_DIR, verify integrity, and report path + SHA-256.
+
+Usage:
+    MAKEFUN_OUTPUT_DIR=/path/to/dir python main.py
+
+Environment:
+    MAKEFUN_OUTPUT_DIR  Destination directory (default: ./output)
+
+Exits non-zero on error (missing source, same-dir copy, I/O failure, hash mismatch).
+"""
+
 import os
 import sys
 import hashlib
-import argparse
+from pathlib import Path
 
-CHUNK = 64 * 1024  # Fixed 64 KiB boundaries ensure deterministic copy boundaries on any host.
+CHUNK_SIZE = 64 * 1024  # 64 KiB for deterministic streaming
 
-def sha256_of_path(path):
+def sha256_digest(path: Path) -> str:
+    """Return hex SHA-256 of the file at path."""
     h = hashlib.sha256()
-    with open(path, "rb") as f:
-        while True:
-            chunk = f.read(CHUNK)
-            if not chunk:
-                break
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(CHUNK_SIZE), b""):
             h.update(chunk)
     return h.hexdigest()
 
-def main():
-    parser = argparse.ArgumentParser(description="Copy entry.png to MAKEFUN_OUTPUT_DIR")
-    parser.add_argument("--verify", action="store_true", help="verify sha256 integrity after copy")
-    args = parser.parse_args()
-
-    src = os.path.join(os.path.dirname(os.path.abspath(__file__)), "entry.png")
-    dst_dir = os.environ.get("MAKEFUN_OUTPUT_DIR", "output")
-    dst_path = os.path.join(dst_dir, "entry.png")
-
-    # Do not copy onto itself
-    src_dir = os.path.dirname(os.path.abspath(src))
-    if src_dir == os.path.abspath(dst_dir):
-        raise RuntimeError(f"Source and output directory are the same: {dst_dir}")
-
-    if not os.path.isfile(src):
-        raise FileNotFoundError(f"entry.png not found next to main.py: {src}")
-
-    os.makedirs(dst_dir, exist_ok=True)
-
-    with open(src, "rb") as fin, open(dst_path, "wb") as fout:
-        while True:
-            chunk = fin.read(CHUNK)
-            if not chunk:
-                break
+def copy_file(src: Path, dst: Path) -> None:
+    """Copy src to dst in fixed-size chunks."""
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    with src.open("rb") as fin, dst.open("wb") as fout:
+        for chunk in iter(lambda: fin.read(CHUNK_SIZE), b""):
             fout.write(chunk)
 
-    dst_size = os.path.getsize(dst_path)
-    src_size = os.path.getsize(src)
-    if dst_size != src_size:
-        raise RuntimeError(f"Size mismatch: source {src_size} bytes, destination {dst_size} bytes")
-
-    if args.verify:
-        src_hash = sha256_of_path(src)
-        dst_hash = sha256_of_path(dst_path)
-        if src_hash != dst_hash:
-            print(f"SHA256 mismatch: source {src_hash} != destination {dst_hash}", file=sys.stderr)
-            sys.exit(1)
-
-    print(f"{dst_path} {dst_size}")
+def main() -> int:
+    # Resolve paths
+    script_dir = Path(__file__).resolve().parent
+    src = script_dir / "entry.png"
+    
+    out_dir = Path(os.environ.get("MAKEFUN_OUTPUT_DIR", "output")).resolve()
+    dst = out_dir / "entry.png"
+    
+    # Refuse if source and destination directories are identical
+    if src.parent == dst.parent:
+        print(f"Error: source and output directory are the same: {src.parent}", file=sys.stderr)
+        return 1
+    
+    if not src.is_file():
+        print(f"Error: entry.png not found next to main.py: {src}", file=sys.stderr)
+        return 1
+    
+    try:
+        copy_file(src, dst)
+    except OSError as e:
+        print(f"Error copying file: {e}", file=sys.stderr)
+        return 1
+    
+    # Verify size match
+    if src.stat().st_size != dst.stat().st_size:
+        print(f"Error: size mismatch after copy", file=sys.stderr)
+        return 1
+    
+    # Compute and verify hash
+    digest = sha256_digest(dst)
+    if digest != sha256_digest(src):
+        print(f"Error: SHA-256 mismatch after copy", file=sys.stderr)
+        return 1
+    
+    # Success: print path and digest
+    print(f"{dst} {digest}")
+    return 0
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
